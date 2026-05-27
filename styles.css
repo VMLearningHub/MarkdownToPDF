@@ -1,0 +1,490 @@
+:root {
+  --bg: #090b0f;
+  --panel: #11141d;
+  --panel-2: #181d28;
+  --border: #242b3b;
+  --text: #f0f3f6;
+  --muted: #848e9f;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --danger: #ef4444;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* App Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+  z-index: 10;
+}
+
+.brand h1 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 700;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.btn:hover {
+  background: var(--border);
+  border-color: var(--muted);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+  background: var(--panel-2);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+/* Workspace Layout */
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  min-height: 0;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  min-height: 0;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+.preview-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.control-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#pdf-theme, #filename {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 12px;
+  outline: none;
+  transition: var(--transition);
+}
+
+#pdf-theme:focus, #filename:focus {
+  border-color: var(--accent);
+}
+
+#filename {
+  width: 140px;
+}
+
+#pdf-theme {
+  cursor: pointer;
+}
+
+/* Formatting Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tool-btn:hover {
+  background: var(--panel-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.tool-btn:active {
+  transform: scale(0.95);
+}
+
+.tool-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+/* Editor pane text area */
+#editor {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 16px 20px;
+  tab-size: 2;
+  transition: var(--transition);
+}
+
+#editor:focus {
+  background: #131722;
+}
+
+/* Preview pane styling */
+.preview-pane {
+  background: #ffffff;
+}
+
+#preview {
+  flex: 1;
+  overflow: auto;
+  padding: 36px 44px;
+  background: #ffffff;
+  color: var(--theme-text-main, #1e293b);
+
+  /* Fallback slate variables */
+  --theme-primary: #1e293b;
+  --theme-primary-border: #334155;
+  --theme-accent: #3b82f6;
+  --theme-accent-bg: #f8fafc;
+  --theme-text-main: #1e293b;
+  --theme-text-muted: #475569;
+  --theme-bg-even-row: #f8fafc;
+  --theme-border-light: #e2e8f0;
+}
+
+/* Overriding GFM Styles for Beautiful Previews */
+.markdown-body {
+  box-sizing: border-box;
+  font-family: var(--font-sans) !important;
+}
+
+/* Customize heading colors inside the preview */
+#preview.markdown-body h1,
+#preview.markdown-body h2,
+#preview.markdown-body h3,
+#preview.markdown-body h4 {
+  color: var(--theme-primary) !important;
+  border-bottom-color: var(--theme-border-light) !important;
+}
+
+/* Customize table display in preview */
+#preview.markdown-body table {
+  display: table !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 20px 0 !important;
+  font-size: 13.5px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border-radius: var(--radius-sm) !important;
+  overflow: hidden !important;
+}
+
+#preview.markdown-body thead th {
+  background-color: var(--theme-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  padding: 10px 14px !important;
+  border: 1px solid var(--theme-primary-border) !important;
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+  letter-spacing: 0.5px !important;
+}
+
+#preview.markdown-body tbody td {
+  padding: 10px 14px !important;
+  border: 1px solid var(--theme-border-light) !important;
+  color: var(--theme-text-muted) !important;
+}
+
+#preview.markdown-body tbody tr:nth-child(even) {
+  background-color: var(--theme-bg-even-row) !important;
+}
+
+#preview.markdown-body tbody tr:hover {
+  background-color: var(--theme-accent-bg) !important;
+}
+
+/* Modernize blockquotes */
+#preview.markdown-body blockquote {
+  margin: 20px 0 !important;
+  padding: 12px 20px !important;
+  background-color: var(--theme-accent-bg) !important;
+  border-left: 4px solid var(--theme-accent) !important;
+  color: var(--theme-text-muted) !important;
+  font-style: italic !important;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+}
+
+/* Modernize Code blocks */
+#preview.markdown-body pre {
+  background-color: var(--theme-accent-bg) !important;
+  border: 1px solid var(--theme-border-light) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 14px 18px !important;
+}
+
+#preview.markdown-body code {
+  font-family: var(--font-mono) !important;
+  background-color: var(--theme-accent-bg) !important;
+  color: var(--theme-primary) !important;
+}
+
+#preview.markdown-body pre code {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* Nested List Hierarchy Connection Visualizer */
+#preview.markdown-body ul ul {
+  position: relative;
+  padding-left: 20px !important;
+  margin-left: 6px !important;
+  margin-top: 4px !important;
+}
+
+#preview.markdown-body ul ul::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 4px;
+  bottom: 10px;
+  width: 1.5px;
+  background-color: var(--theme-border-light, #cbd5e1);
+}
+
+#preview.markdown-body ul ul li {
+  position: relative;
+  list-style-type: none !important;
+}
+
+#preview.markdown-body ul ul li::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: -16px;
+  width: 12px;
+  height: 1.5px;
+  background-color: var(--theme-border-light, #cbd5e1);
+}
+
+/* Toast Notification styling */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 12px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition);
+  z-index: 1000;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.error {
+  border-color: var(--danger);
+  color: #fee2e2;
+  background: #27161a;
+}
+
+/* Custom Page Break Visualizer inside live preview */
+.page-break {
+  border-top: 2px dashed #cbd5e1;
+  margin: 36px 0;
+  position: relative;
+  page-break-before: always !important;
+  break-before: always !important;
+}
+
+.page-break::after {
+  content: "✂️ MANUAL PAGE BREAK";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+/* Responsive queries */
+@media (max-width: 860px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1.2fr 1fr;
+  }
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .preview-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
