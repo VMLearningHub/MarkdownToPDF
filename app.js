@@ -12,6 +12,7 @@
   const toast = document.getElementById("toast");
   const fileListEl = document.getElementById("file-list");
   const refreshFilesBtn = document.getElementById("refresh-files-btn");
+  const syncScrollBtn = document.getElementById("sync-scroll-btn");
 
   const STORAGE_KEY = "md-to-pdf:draft";
   const STORAGE_DIR = "storage/";
@@ -701,10 +702,28 @@ async function registerBooking(bookingData) {
   // ---- Synchronized scrolling between editor and preview ----
   // Scroll proportionally (they have different heights). A lock flag prevents
   // the programmatic scroll on one side from re-triggering the other's handler.
+  const SYNC_KEY = "md-to-pdf:sync-scroll";
   let syncingScroll = false;
+  let syncScrollOn = true;
+
+  function setSyncScroll(on) {
+    syncScrollOn = on;
+    syncScrollBtn.classList.toggle("is-on", on);
+    syncScrollBtn.setAttribute("aria-checked", String(on));
+    try { localStorage.setItem(SYNC_KEY, on ? "1" : "0"); } catch (_) {}
+  }
+
+  try {
+    if (localStorage.getItem(SYNC_KEY) === "0") setSyncScroll(false);
+  } catch (_) {}
+
+  syncScrollBtn.addEventListener("click", () => {
+    setSyncScroll(!syncScrollOn);
+    showToast(syncScrollOn ? "Scroll sync on" : "Scroll sync off");
+  });
 
   function syncScroll(source, target) {
-    if (syncingScroll) return;
+    if (!syncScrollOn || syncingScroll) return;
     const srcScrollable = source.scrollHeight - source.clientHeight;
     if (srcScrollable <= 0) return;
     const ratio = source.scrollTop / srcScrollable;

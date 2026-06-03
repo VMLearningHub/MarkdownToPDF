@@ -46,7 +46,13 @@
     <section class="pane editor-pane">
       <div class="pane-header">
         <span>Editor</span>
-        <span id="stats" class="muted">0 words · 0 chars</span>
+        <div class="pane-header-right">
+          <span id="stats" class="muted">0 words · 0 chars</span>
+          <button id="sync-scroll-btn" class="toggle-btn is-on" type="button" role="switch" aria-checked="true" title="Sync editor & preview scrolling">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <span>Sync</span>
+          </button>
+        </div>
       </div>
       <div class="toolbar">
         <button type="button" class="tool-btn" data-action="bold" title="Bold (**text**)">

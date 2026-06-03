@@ -180,6 +180,46 @@ body {
   gap: 16px;
 }
 
+.pane-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Sync-scroll toggle */
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.toggle-btn:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+.toggle-btn.is-on {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--accent);
+  color: #93c5fd;
+}
+
+.toggle-btn.is-on:hover {
+  background: rgba(59, 130, 246, 0.22);
+}
+
 .control-label {
   display: flex;
   align-items: center;
