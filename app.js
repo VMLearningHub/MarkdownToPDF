@@ -10,8 +10,11 @@
   const downloadMdBtn = document.getElementById("download-md-btn");
   const pdfThemeSelect = document.getElementById("pdf-theme");
   const toast = document.getElementById("toast");
+  const fileListEl = document.getElementById("file-list");
+  const refreshFilesBtn = document.getElementById("refresh-files-btn");
 
   const STORAGE_KEY = "md-to-pdf:draft";
+  const STORAGE_DIR = "storage/";
 
   // PDF Themes Config
   const PDF_THEMES = {
@@ -592,6 +595,129 @@ async function registerBooking(bookingData) {
 3. **Execution Time**: The anticipated execution path spans 30 calendar weeks.
 `;
 
+  // ---- Storage folder file browser ----
+  const FILE_ICON =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+
+  let activeFileName = null;
+
+  // Discover markdown files in the storage folder. Works on any static server:
+  // first try parsing a directory listing, then fall back to storage/manifest.json.
+  async function fetchStorageFileNames() {
+    const isMd = (n) => /\.(md|markdown)$/i.test(n);
+
+    // 1) Directory listing (Live Server, python http.server, nginx autoindex, ...)
+    try {
+      const res = await fetch(STORAGE_DIR, { headers: { Accept: "text/html" } });
+      if (res.ok) {
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const names = [...doc.querySelectorAll("a[href]")]
+          .map((a) => decodeURIComponent(a.getAttribute("href") || ""))
+          .map((href) => href.split("/").pop().split("?")[0])
+          .filter(isMd);
+        const unique = [...new Set(names)];
+        if (unique.length) return unique.sort((a, b) => a.localeCompare(b));
+      }
+    } catch (_) {}
+
+    // 2) Fallback: explicit manifest file
+    try {
+      const res = await fetch(STORAGE_DIR + "manifest.json", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : data.files || [];
+        const names = list
+          .map((item) => (typeof item === "string" ? item : item && item.name))
+          .filter((n) => typeof n === "string" && isMd(n));
+        return [...new Set(names)].sort((a, b) => a.localeCompare(b));
+      }
+    } catch (_) {}
+
+    return [];
+  }
+
+  async function loadStorageFile(name) {
+    try {
+      const res = await fetch(STORAGE_DIR + encodeURIComponent(name), { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      editor.value = text;
+      const base = name.replace(/\.(md|markdown)$/i, "");
+      if (base) filenameInput.value = base;
+      activeFileName = name;
+      render();
+      highlightActiveFile();
+      showToast(`Loaded ${name}`);
+    } catch (err) {
+      console.error(err);
+      showToast(`Could not open ${name}.`, true);
+    }
+  }
+
+  function highlightActiveFile() {
+    fileListEl.querySelectorAll(".file-item").forEach((li) => {
+      li.classList.toggle("active", li.dataset.name === activeFileName);
+    });
+  }
+
+  function renderFileList(names) {
+    fileListEl.innerHTML = "";
+    if (!names.length) {
+      const li = document.createElement("li");
+      li.className = "file-list-empty";
+      if (location.protocol === "file:") {
+        li.innerHTML =
+          "Opened as a <b>file://</b> page, so the browser blocks reading the folder.<br><br>" +
+          "Run a server in this folder:<br><code>python3 -m http.server 8000</code><br><br>" +
+          "then open <b>http://localhost:8000/</b>";
+      } else {
+        li.textContent =
+          "No markdown files found in /storage. Add .md files (or run the refresh button).";
+      }
+      fileListEl.appendChild(li);
+      return;
+    }
+    names.forEach((name) => {
+      const li = document.createElement("li");
+      li.className = "file-item";
+      li.dataset.name = name;
+      li.title = name;
+      li.innerHTML = `${FILE_ICON}<span>${name}</span>`;
+      li.addEventListener("click", () => loadStorageFile(name));
+      fileListEl.appendChild(li);
+    });
+    highlightActiveFile();
+  }
+
+  async function refreshFileList() {
+    fileListEl.innerHTML = '<li class="file-list-empty">Loading…</li>';
+    const names = await fetchStorageFileNames();
+    renderFileList(names);
+  }
+
+  refreshFilesBtn.addEventListener("click", refreshFileList);
+
+  // ---- Synchronized scrolling between editor and preview ----
+  // Scroll proportionally (they have different heights). A lock flag prevents
+  // the programmatic scroll on one side from re-triggering the other's handler.
+  let syncingScroll = false;
+
+  function syncScroll(source, target) {
+    if (syncingScroll) return;
+    const srcScrollable = source.scrollHeight - source.clientHeight;
+    if (srcScrollable <= 0) return;
+    const ratio = source.scrollTop / srcScrollable;
+    const tgtScrollable = target.scrollHeight - target.clientHeight;
+    syncingScroll = true;
+    target.scrollTop = ratio * tgtScrollable;
+    // Release the lock after the resulting scroll event has fired.
+    requestAnimationFrame(() => { syncingScroll = false; });
+  }
+
+  editor.addEventListener("scroll", () => syncScroll(editor, preview));
+  preview.addEventListener("scroll", () => syncScroll(preview, editor));
+
   editor.addEventListener("input", render);
 
   fileInput.addEventListener("change", (e) => {
@@ -649,4 +775,5 @@ async function registerBooking(bookingData) {
   restore();
   if (!editor.value) editor.value = SAMPLE;
   render();
+  refreshFileList();
 })();
