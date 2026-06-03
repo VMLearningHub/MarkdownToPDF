@@ -13,6 +13,7 @@
   const fileListEl = document.getElementById("file-list");
   const refreshFilesBtn = document.getElementById("refresh-files-btn");
   const syncScrollBtn = document.getElementById("sync-scroll-btn");
+  const filesPane = document.querySelector(".files-pane");
 
   const STORAGE_KEY = "md-to-pdf:draft";
   const STORAGE_DIR = "storage/";
@@ -599,6 +600,8 @@ async function registerBooking(bookingData) {
   // ---- Storage folder file browser ----
   const FILE_ICON =
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  const TRASH_ICON =
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
 
   let activeFileName = null;
 
@@ -656,6 +659,22 @@ async function registerBooking(bookingData) {
     }
   }
 
+  async function deleteStorageFile(name) {
+    if (!confirm(`Delete "${name}" from storage? This cannot be undone.`)) return;
+    try {
+      const res = await fetch("api/delete?name=" + encodeURIComponent(name), {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (activeFileName === name) activeFileName = null;
+      await refreshFileList();
+      showToast(`Deleted ${name}`);
+    } catch (err) {
+      console.error(err);
+      showToast("Delete needs server.py running.", true);
+    }
+  }
+
   function highlightActiveFile() {
     fileListEl.querySelectorAll(".file-item").forEach((li) => {
       li.classList.toggle("active", li.dataset.name === activeFileName);
@@ -684,8 +703,14 @@ async function registerBooking(bookingData) {
       li.className = "file-item";
       li.dataset.name = name;
       li.title = name;
-      li.innerHTML = `${FILE_ICON}<span>${name}</span>`;
+      li.innerHTML =
+        `${FILE_ICON}<span class="file-name">${name}</span>` +
+        `<button class="file-delete" type="button" title="Delete ${name}">${TRASH_ICON}</button>`;
       li.addEventListener("click", () => loadStorageFile(name));
+      li.querySelector(".file-delete").addEventListener("click", (e) => {
+        e.stopPropagation(); // don't trigger the row's load handler
+        deleteStorageFile(name);
+      });
       fileListEl.appendChild(li);
     });
     highlightActiveFile();
@@ -698,6 +723,78 @@ async function registerBooking(bookingData) {
   }
 
   refreshFilesBtn.addEventListener("click", refreshFileList);
+
+  // ---- Drag & drop upload into the storage folder ----
+  function readFileText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(String(e.target?.result || ""));
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.readAsText(file);
+    });
+  }
+
+  async function uploadToStorage(file) {
+    if (!/\.(md|markdown)$/i.test(file.name)) {
+      showToast(`${file.name}: only .md files can be uploaded.`, true);
+      return;
+    }
+    const text = await readFileText(file);
+    try {
+      const res = await fetch("api/upload?name=" + encodeURIComponent(file.name), {
+        method: "POST",
+        headers: { "Content-Type": "text/markdown" },
+        body: text,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await refreshFileList();
+      await loadStorageFile(file.name);
+      showToast(`Uploaded ${file.name}`);
+    } catch (err) {
+      // No upload backend (plain http.server) — fall back to loading in-editor.
+      console.error(err);
+      editor.value = text;
+      const base = file.name.replace(/\.(md|markdown)$/i, "");
+      if (base) filenameInput.value = base;
+      render();
+      showToast("Upload needs server.py — opened in editor instead.", true);
+    }
+  }
+
+  async function handleDroppedFiles(fileList) {
+    const files = [...fileList].filter((f) => /\.(md|markdown)$/i.test(f.name));
+    if (!files.length) {
+      showToast("Drop .md or .markdown files to upload.", true);
+      return;
+    }
+    for (const f of files) {
+      await uploadToStorage(f);
+    }
+  }
+
+  ["dragenter", "dragover"].forEach((evt) => {
+    filesPane.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      filesPane.classList.add("drag-over");
+    });
+  });
+
+  ["dragleave", "dragend"].forEach((evt) => {
+    filesPane.addEventListener(evt, (e) => {
+      // Ignore leave events bubbling up from children still inside the pane.
+      if (evt === "dragleave" && filesPane.contains(e.relatedTarget)) return;
+      filesPane.classList.remove("drag-over");
+    });
+  });
+
+  filesPane.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // don't let the global drop handler also load it
+    filesPane.classList.remove("drag-over");
+    const files = e.dataTransfer?.files;
+    if (files && files.length) handleDroppedFiles(files);
+  });
 
   // ---- Synchronized scrolling between editor and preview ----
   // Scroll proportionally (they have different heights). A lock flag prevents

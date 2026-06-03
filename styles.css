@@ -458,6 +458,31 @@ body {
 /* Storage Files Pane */
 .files-pane {
   min-width: 0;
+  position: relative;
+}
+
+.files-pane.drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -8px;
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.files-pane.drag-over::after {
+  content: "Drop .md files to upload";
+  position: absolute;
+  inset: 0;
+  top: 41px; /* below the pane header */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  background: rgba(17, 20, 29, 0.85);
+  pointer-events: none;
 }
 
 .icon-btn {
@@ -509,6 +534,44 @@ body {
 .file-item svg {
   flex-shrink: 0;
   color: var(--muted);
+}
+
+.file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-delete {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.file-item:hover .file-delete {
+  opacity: 1;
+}
+
+.file-delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.file-delete svg {
+  color: inherit;
 }
 
 .file-item:hover {
